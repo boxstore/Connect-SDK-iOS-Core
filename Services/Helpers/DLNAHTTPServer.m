@@ -26,7 +26,10 @@
 #import "GCDWebServerDataRequest.h"
 #import "GCDWebServerHTTPStatusCodes.h"
 #import "ConnectUtil.h"
+#import "GCDWebServer.h"
 
+@interface DLNAHTTPServer()<GCDWebServerDelegate>
+@end
 
 @implementation DLNAHTTPServer
 {
@@ -39,7 +42,7 @@
     {
         _allSubscriptions = [NSMutableDictionary new];
     }
-
+    
     return self;
 }
 
@@ -54,23 +57,23 @@
 - (void) start
 {
     [self stop];
-
+    
     [_allSubscriptions removeAllObjects];
-
+    
     _server = [[GCDWebServer alloc] init];
     _server.delegate = self;
-
+    
     GCDWebServerResponse *(^webServerResponseBlock)(GCDWebServerRequest *request) = ^GCDWebServerResponse *(GCDWebServerRequest *request) {
         [self processRequest:(GCDWebServerDataRequest *)request];
         // according to the UPnP specification, a subscriber must reply with HTTP 200 OK
         // to successfully acknowledge the notification
         return [GCDWebServerResponse responseWithStatusCode:kGCDWebServerHTTPStatusCode_OK];
     };
-
+    
     [self.server addDefaultHandlerForMethod:@"NOTIFY"
                                requestClass:[GCDWebServerDataRequest class]
                                processBlock:webServerResponseBlock];
-
+    
     [self.server startWithPort:49291 bonjourName:nil];
 }
 
@@ -78,12 +81,12 @@
 {
     if (!_server)
         return;
-
+    
     self.server.delegate = nil;
-
+    
     if (_server.isRunning)
         [self.server stop];
-
+    
     _server = nil;
 }
 
@@ -107,10 +110,10 @@
     @synchronized (_allSubscriptions)
     {
         NSString *serviceSubscriptionKey = [self serviceSubscriptionKeyForURL:subscription.target];
-
+        
         if (!_allSubscriptions[serviceSubscriptionKey])
             _allSubscriptions[serviceSubscriptionKey] = [NSMutableArray new];
-
+        
         NSMutableArray *serviceSubscriptions = _allSubscriptions[serviceSubscriptionKey];
         [serviceSubscriptions addObject:subscription];
         subscription.isSubscribed = YES;
@@ -122,15 +125,15 @@
     @synchronized (_allSubscriptions)
     {
         NSString *serviceSubscriptionKey = [self serviceSubscriptionKeyForURL:subscription.target];
-
+        
         NSMutableArray *serviceSubscriptions = _allSubscriptions[serviceSubscriptionKey];
-
+        
         if (!_allSubscriptions[serviceSubscriptionKey])
             return;
-
+        
         subscription.isSubscribed = NO;
         [serviceSubscriptions removeObject:subscription];
-
+        
         if (serviceSubscriptions.count == 0)
             [_allSubscriptions removeObjectForKey:serviceSubscriptionKey];
     }
@@ -148,53 +151,53 @@
 {
     if (!request.data || request.data.length == 0)
         return;
-
+    
     NSString *serviceSubscriptionKey = [[self serviceSubscriptionKeyForURL:request.URL]
                                         stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     NSArray *serviceSubscriptions;
-
+    
     @synchronized (_allSubscriptions)
     {
         serviceSubscriptions = _allSubscriptions[serviceSubscriptionKey];
     }
-
+    
     if (!serviceSubscriptions || serviceSubscriptions.count == 0)
         return;
- 
+    
     NSError *xmlParseError;
     NSDictionary *requestDataXML = [CTXMLReader dictionaryForXMLData:request.data error:&xmlParseError];
-
+    
     if (xmlParseError)
     {
         DLog(@"XML Parse error %@", xmlParseError.description);
         return;
     }
-
+    
     NSString *eventXMLStringEncoded = requestDataXML[@"e:propertyset"][@"e:property"][@"LastChange"][@"text"];
-
+    
     if (!eventXMLStringEncoded)
     {
         DLog(@"Received event with no LastChange data, ignoring...");
         return;
     }
-
+    
     NSError *eventXMLParseError;
     NSDictionary *eventXML = [CTXMLReader dictionaryForXMLString:eventXMLStringEncoded
                                                            error:&eventXMLParseError];
-
+    
     if (eventXMLParseError)
     {
         DLog(@"Could not parse event into usable format, ignoring… (%@)", eventXMLParseError);
         return;
     }
-
+    
     [self handleEvent:eventXML forSubscriptions:serviceSubscriptions];
 }
 
 - (void) handleEvent:(NSDictionary *)eventInfo forSubscriptions:(NSArray *)subscriptions
 {
     DLog(@"eventInfo: %@", eventInfo);
-
+    
     [subscriptions enumerateObjectsUsingBlock:^(ServiceSubscription *subscription, NSUInteger subIdx, BOOL *subStop) {
         [subscription.successCalls enumerateObjectsUsingBlock:^(SuccessBlock success, NSUInteger successIdx, BOOL *successStop) {
             dispatch_on_main(^{
@@ -222,7 +225,7 @@
     struct ifaddrs *interfaces = NULL;
     struct ifaddrs *temp_addr = NULL;
     int success = 0;
-
+    
     // retrieve the current interfaces - returns 0 on success
     success = getifaddrs(&interfaces);
     if (success == 0)
@@ -239,7 +242,7 @@
             temp_addr = temp_addr->ifa_next;
         }
     }
-
+    
     // Free memory
     freeifaddrs(interfaces);
     return address;

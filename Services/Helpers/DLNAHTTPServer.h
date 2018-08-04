@@ -19,10 +19,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "GCDWebServer.h"
 #import "ServiceSubscription.h"
 
-@interface DLNAHTTPServer : NSObject <GCDWebServerDelegate>
+@class GCDWebServer;
+@interface DLNAHTTPServer : NSObject
 
 - (void) start;
 - (void) stop;
