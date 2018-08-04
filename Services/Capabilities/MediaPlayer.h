@@ -41,7 +41,9 @@
 
 extern NSString *const kMediaPlayerSubtitleSRT;
 extern NSString *const kMediaPlayerSubtitleWebVTT;
-
+#define kMediaPlayerSubtitleCustomStyle @"MediaPlayer.Subtitle.CustomStyle"
+#define kMediaPlayerMultipleSubtitle @"MediaPlayer.Subtitle.Multiple"
+#define kMediaPlayerSetActiveSubtitle @"MediaPlayer.Subtitle.SetActive"
 
 #define kMediaPlayerCapabilities @[\
     kMediaPlayerDisplayImage,\
@@ -77,6 +79,14 @@ typedef void (^MediaPlayerSuccessBlock)(MediaLaunchObject *mediaLaunchObject);
                      shouldLoop:(BOOL)shouldLoop
                         success:(MediaPlayerSuccessBlock)success
                         failure:(FailureBlock)failure;
+
+- (void) setActiveTrackIDs: (NSArray *) ids
+                   success:(SuccessBlock)success
+                   failure:(FailureBlock)failure;
+
+- (void) setCaptionStyle:(id) style
+                 success:(SuccessBlock)success
+                 failure:(FailureBlock)failure;
 
 - (void) closeMedia:(LaunchSession *)launchSession
             success:(SuccessBlock)success

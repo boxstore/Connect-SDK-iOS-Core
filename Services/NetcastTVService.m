@@ -1307,6 +1307,20 @@ NSString *lgeUDAPRequestURI[8] = {
     [self sendNotSupportedFailure:failure];
 }
 
+- (void) setCaptionStyle:(id)style success:(SuccessBlock)success failure:(FailureBlock)failure {
+    if (failure) {
+        failure([ConnectError generateErrorWithCode:ConnectStatusCodeNotSupported
+                                         andDetails:nil]);
+    }
+}
+
+- (void) setActiveTrackIDs:(NSArray *)ids success:(SuccessBlock)success failure:(FailureBlock)failure {
+    if (failure) {
+        failure([ConnectError generateErrorWithCode:ConnectStatusCodeNotSupported
+                                         andDetails:nil]);
+    }
+}
+
 - (void)closeMedia:(LaunchSession *)launchSession success:(SuccessBlock)success failure:(FailureBlock)failure
 {
     if (self.dlnaService)

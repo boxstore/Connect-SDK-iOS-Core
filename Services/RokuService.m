@@ -629,6 +629,20 @@ static NSMutableArray *registeredApps = nil;
     [command send];
 }
 
+- (void) setCaptionStyle:(id)style success:(SuccessBlock)success failure:(FailureBlock)failure {
+    if (failure) {
+        failure([ConnectError generateErrorWithCode:ConnectStatusCodeNotSupported
+                                         andDetails:nil]);
+    }
+}
+
+- (void) setActiveTrackIDs:(NSArray *)ids success:(SuccessBlock)success failure:(FailureBlock)failure {
+    if (failure) {
+        failure([ConnectError generateErrorWithCode:ConnectStatusCodeNotSupported
+                                         andDetails:nil]);
+    }
+}
+
 - (void)closeMedia:(LaunchSession *)launchSession success:(SuccessBlock)success failure:(FailureBlock)failure
 {
     [self.keyControl homeWithSuccess:success failure:failure];
