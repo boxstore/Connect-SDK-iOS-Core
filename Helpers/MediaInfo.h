@@ -42,6 +42,8 @@
 
 /*! Duration of the media file */
 @property (nonatomic) NSTimeInterval duration;
+@property (nonatomic) NSTimeInterval startTime;
+@property (nonatomic, strong) NSArray* tracks;
 
 /*! Collection of ImageInfo objects to send, as necessary, to the device when launching media through the MediaPlayer capability. */
 @property (nonatomic, strong) NSArray *images;
