@@ -80,12 +80,6 @@ typedef void (^MediaPlayerSuccessBlock)(MediaLaunchObject *mediaLaunchObject);
                         success:(MediaPlayerSuccessBlock)success
                         failure:(FailureBlock)failure;
 
-- (void) playMediaWithMediaInfo:(MediaInfo *)mediaInfo
-                   captionStyle:(id) style
-                     shouldLoop:(BOOL)shouldLoop
-                        success:(MediaPlayerSuccessBlock)success
-                        failure:(FailureBlock)failure;
-
 - (void) setActiveTrackIDs: (NSArray *) ids
                    success:(SuccessBlock)success
                    failure:(FailureBlock)failure;
