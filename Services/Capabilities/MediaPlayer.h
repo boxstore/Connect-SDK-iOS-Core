@@ -46,14 +46,14 @@ extern NSString *const kMediaPlayerSubtitleWebVTT;
 #define kMediaPlayerSetActiveSubtitle @"MediaPlayer.Subtitle.SetActive"
 
 #define kMediaPlayerCapabilities @[\
-    kMediaPlayerDisplayImage,\
-    kMediaPlayerPlayVideo,\
-    kMediaPlayerPlayAudio,\
-    kMediaPlayerClose,\
-    kMediaPlayerMetaDataTitle,\
-    kMediaPlayerMetaDataDescription,\
-    kMediaPlayerMetaDataThumbnail,\
-    kMediaPlayerMetaDataMimeType\
+kMediaPlayerDisplayImage,\
+kMediaPlayerPlayVideo,\
+kMediaPlayerPlayAudio,\
+kMediaPlayerClose,\
+kMediaPlayerMetaDataTitle,\
+kMediaPlayerMetaDataDescription,\
+kMediaPlayerMetaDataThumbnail,\
+kMediaPlayerMetaDataMimeType\
 ]
 
 @protocol MediaPlayer <NSObject>
@@ -76,6 +76,12 @@ typedef void (^MediaPlayerSuccessBlock)(MediaLaunchObject *mediaLaunchObject);
                            failure:(FailureBlock)failure;
 
 - (void) playMediaWithMediaInfo:(MediaInfo *)mediaInfo
+                     shouldLoop:(BOOL)shouldLoop
+                        success:(MediaPlayerSuccessBlock)success
+                        failure:(FailureBlock)failure;
+
+- (void) playMediaWithMediaInfo:(MediaInfo *)mediaInfo
+                   captionStyle:(id) style
                      shouldLoop:(BOOL)shouldLoop
                         success:(MediaPlayerSuccessBlock)success
                         failure:(FailureBlock)failure;
