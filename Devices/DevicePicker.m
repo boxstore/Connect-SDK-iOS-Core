@@ -36,31 +36,31 @@
     
     UIPopoverController *_popover;
     NSDictionary *_popoverParams;
-
+    
     dispatch_queue_t _sortQueue;
-
+    
     BOOL _showServiceLabel;
 }
 
 - (instancetype) init
 {
     self = [super init];
-
+    
     if (self)
     {
         _sortQueue = dispatch_queue_create("Connect SDK Device Picker Sort", DISPATCH_QUEUE_SERIAL);
         _devices = [[NSMutableDictionary alloc] init];
-
+        
         self.shouldAnimatePicker = YES;
     }
-
+    
     return self;
 }
 
 - (void)setCurrentDevice:(ConnectableDevice *)currentDevice
 {
     _currentDevice = currentDevice;
-
+    
     [_tableViewController.tableView reloadData];
 }
 
@@ -69,16 +69,15 @@
 - (void) showPicker:(id)sender
 {
     [self sortDevices];
-
+    
     _showServiceLabel = [DiscoveryManager sharedManager].capabilityFilters.count == 0;
-
+    
     NSString *pickerTitle = [[NSBundle mainBundle] localizedStringForKey:@"Connect_SDK_Search_Title" value:@"Pick a device" table:@"ConnectSDK"];
-
+    
     _tableViewController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
     _tableViewController.title = pickerTitle;
     _tableViewController.tableView.delegate = self;
     _tableViewController.tableView.dataSource = self;
-    
     _navigationController = [[UINavigationController alloc] initWithRootViewController:_tableViewController];
     
     UIActivityIndicatorView *indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
@@ -86,10 +85,10 @@
     
     _tableViewController.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:indicator];
     
-    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)
-        [self showPopover:sender];
-    else
-        [self showNavigation];
+    //    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)
+    //        [self showPopover:sender];
+    //    else
+    [self showNavigation];
 }
 
 - (void) showPopover:(id)source
@@ -148,16 +147,16 @@
                                       cancelButtonTitle:nil
                                  destructiveButtonTitle:nil
                                       otherButtonTitles:nil];
-
+    
     @synchronized (_generatedDeviceList)
     {
         _actionSheetDeviceList = [_generatedDeviceList copy];
     }
-
+    
     [_actionSheetDeviceList enumerateObjectsUsingBlock:^(ConnectableDevice *device, NSUInteger idx, BOOL *stop)
-    {
-        [_actionSheet addButtonWithTitle:device.friendlyName];
-    }];
+     {
+         [_actionSheet addButtonWithTitle:device.friendlyName];
+     }];
     
     _actionSheet.cancelButtonIndex = [_actionSheet addButtonWithTitle:pickerCancel];
     
@@ -183,12 +182,25 @@
 - (void) showNavigation
 {
     NSString *pickerCancel = [[NSBundle mainBundle] localizedStringForKey:@"Connect_SDK_Search_Cancel" value:@"Cancel" table:@"ConnectSDK"];
-
+    
     _tableViewController.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:pickerCancel style:UIBarButtonItemStylePlain target:self action:@selector(dismissPicker:)];
     
-    UIWindow *mainWindow = [[UIApplication sharedApplication].windows firstObject];
-    [mainWindow.rootViewController presentViewController:_navigationController animated:self.shouldAnimatePicker completion:nil];
+    UIViewController *rootViewController = [self topViewControllerWithRootViewController: [UIApplication sharedApplication].delegate.window.rootViewController];
+    [rootViewController presentViewController:_navigationController animated:self.shouldAnimatePicker completion:nil];
 }
+
+- (UIViewController *) topViewControllerWithRootViewController: (UIViewController*) rootViewController {
+    if (rootViewController == nil) { return nil; }
+    if ([rootViewController isKindOfClass:[UITabBarController class]] ) {
+        return [self topViewControllerWithRootViewController: ((UITabBarController*)rootViewController).selectedViewController];
+    } else if ([rootViewController isKindOfClass: [UINavigationController class]]) {
+        return [self topViewControllerWithRootViewController: ((UINavigationController*)rootViewController).visibleViewController];
+    } else if (rootViewController.presentedViewController != nil) {
+        return [self topViewControllerWithRootViewController: rootViewController.presentedViewController];
+    }
+    return rootViewController;
+}
+
 
 - (void) dismissPicker:(id)sender
 {
@@ -202,9 +214,9 @@
         else
             [_navigationController dismissViewControllerAnimated:_shouldAnimatePicker completion:nil];
     }
-
+    
     [self cleanupViews];
-
+    
     if (self.delegate && [self.delegate respondsToSelector:@selector(devicePicker:didCancelWithError:)])
     {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -225,10 +237,10 @@
     
     if (_popover)
         _popover.delegate = nil;
-
+    
     if (_actionSheet)
         _actionSheet.delegate = nil;
-
+    
     _actionSheetTargetView = nil;
     _actionSheet = nil;
     _actionSheetDeviceList = nil;
@@ -244,15 +256,15 @@
 {
     dispatch_async(_sortQueue, ^{
         NSArray *devices;
-
+        
         @synchronized (_devices) { devices = [_devices allValues]; }
-
+        
         @synchronized (_generatedDeviceList)
         {
             _generatedDeviceList = [devices sortedArrayUsingComparator:^NSComparisonResult(ConnectableDevice *device1, ConnectableDevice *device2) {
                 NSString *device1Name = [[self nameForDevice:device1] lowercaseString];
                 NSString *device2Name = [[self nameForDevice:device2] lowercaseString];
-
+                
                 return [device1Name compare:device2Name];
             }];
         }
@@ -308,25 +320,32 @@
     
     ConnectableDevice *device = [_actionSheetDeviceList objectAtIndex:buttonIndex];
     BOOL deviceExists = YES;
-
+    
     @synchronized (_generatedDeviceList)
     {
         deviceExists = [_generatedDeviceList containsObject:device];
     }
-
+    
     if (!deviceExists)
     {
         DLog(@"User selected a device that no longer exists");
         return;
     }
-
+    
     if (self.delegate && [self.delegate respondsToSelector:@selector(devicePicker:didSelectDevice:)])
     {
         dispatch_async(dispatch_get_main_queue(), ^
-        {
-            [self.delegate devicePicker:self didSelectDevice:device];
-        });
+                       {
+                           [self.delegate devicePicker:self didSelectDevice:device];
+                       });
     }
+}
+
+- (void) reloadData {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (_tableViewController)
+            [_tableViewController.tableView reloadData];
+    });
 }
 
 - (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
@@ -345,11 +364,24 @@
 {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
-    ConnectableDevice *device;
-
+    ConnectableDevice *device = nil;
+    
     @synchronized (_generatedDeviceList)
     {
-        device = (ConnectableDevice *) [_generatedDeviceList objectAtIndex:indexPath.row];
+        if (_generatedDeviceList.count > 0 && indexPath.row < _generatedDeviceList.count)
+            device = (ConnectableDevice *) [_generatedDeviceList objectAtIndex:indexPath.row];
+    }
+    
+    if (!device) {
+        if (self.enableWifiSharing) {
+            if (_delegate && [_delegate respondsToSelector:@selector(devicePickerDidSelectWifiSharing:)])
+            {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [_delegate devicePickerDidSelectWifiSharing: self];
+                });
+            }
+        }
+        return;
     }
     
     if (self.currentDevice)
@@ -361,10 +393,10 @@
     if (_delegate && [_delegate respondsToSelector:@selector(devicePicker:didSelectDevice:)])
     {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [_delegate devicePicker:self didSelectDevice:device];
+            [self->_delegate devicePicker:self didSelectDevice:device];
         });
     }
-
+    
     [self dismissPicker:self];
 }
 
@@ -378,55 +410,68 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     NSInteger numberOfRows = 0;
-
+    
     @synchronized (_generatedDeviceList)
     {
         if (_generatedDeviceList)
             numberOfRows = _generatedDeviceList.count;
     }
-
-    return numberOfRows;
+    
+    return numberOfRows + (_enableWifiSharing ? 1 : 0);
 }
 
 static NSString *cellIdentifier = @"connectPickerCell";
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-
+    
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
-
+    
     if (cell == nil)
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
-
-    ConnectableDevice *device;
-
+    
+    ConnectableDevice *device = nil;
+    
     @synchronized (_generatedDeviceList)
     {
         if (_generatedDeviceList.count > 0 && indexPath.row < _generatedDeviceList.count)
             device = (ConnectableDevice *) [_generatedDeviceList objectAtIndex:indexPath.row];
     }
-
-    if (!device)
+    
+    if (!device) {
+        if (self.enableWifiSharing) {
+            if (self.serverAddress && self.serverAddress.length > 0) {
+                [cell.textLabel setText: self.serverAddress];
+                [cell.detailTextLabel setText: @"Open the address in web browser by PC, Laptops, TV...  with the same wifi network"];
+            } else {
+                [cell.textLabel setText: @"Wifi Sharing"];
+                [cell.detailTextLabel setText: @"Tap to turn on Wifi Sharing"];
+            }
+        } else {
+            [cell.textLabel setText: @""];
+            [cell.detailTextLabel setText: @""];
+        }
         return cell;
-
+    }
+    
     NSString *deviceName = [self nameForDevice:device];
     [cell.textLabel setText:deviceName];
-
-    #ifdef DEBUG
+    
+#ifdef DEBUG
+    [cell.detailTextLabel setText:[device connectedServiceNames]];
+#endif
+    
+    if (_showServiceLabel)
         [cell.detailTextLabel setText:[device connectedServiceNames]];
-    #endif
-
-        if (_showServiceLabel)
-            [cell.detailTextLabel setText:[device connectedServiceNames]];
-
-        if (self.currentDevice)
-        {
-            if ([self.currentDevice.serviceDescription.address isEqualToString:device.serviceDescription.address])
-                [cell setAccessoryType:UITableViewCellAccessoryCheckmark];
-            else
-                [cell setAccessoryType:UITableViewCellAccessoryNone];
-        }
-
+    
+    if (self.currentDevice)
+    {
+        if ([self.currentDevice.serviceDescription.address isEqualToString:device.serviceDescription.address])
+            [cell setAccessoryType:UITableViewCellAccessoryCheckmark];
+        else
+            [cell setAccessoryType:UITableViewCellAccessoryNone];
+    }
+    
     return cell;
 }
 
@@ -451,9 +496,9 @@ static NSString *cellIdentifier = @"connectPickerCell";
     if (_devices)
     {
         @synchronized (_devices) { [_devices setObject:device forKey:device.address]; }
-
+        
         [self sortDevices];
-
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             if (_tableViewController)
                 [_tableViewController.tableView reloadData];
@@ -466,9 +511,9 @@ static NSString *cellIdentifier = @"connectPickerCell";
     if (_devices)
     {
         @synchronized (_devices) { [_devices removeObjectForKey:device.address]; }
-
+        
         [self sortDevices];
-
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             if (_tableViewController)
                 [_tableViewController.tableView reloadData];

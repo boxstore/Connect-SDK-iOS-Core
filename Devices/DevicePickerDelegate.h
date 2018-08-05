@@ -35,6 +35,7 @@
  * @param device ConnectableDevice that was selected by the user
  */
 - (void) devicePicker:(DevicePicker *)picker didSelectDevice:(ConnectableDevice *)device;
+- (void) devicePickerDidSelectWifiSharing:(DevicePicker *)picker;
 
 @optional
 

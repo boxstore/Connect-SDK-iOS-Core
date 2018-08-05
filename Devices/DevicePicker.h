@@ -37,6 +37,9 @@
 /*! Delegate that receives selected/cancelled messages. */
 @property (nonatomic, weak) id<DevicePickerDelegate> delegate;
 
+@property (nonatomic) BOOL enableWifiSharing;
+@property (nonatomic, strong) NSString* serverAddress;
+
 /*!
  * When the showPicker method is called, it can animate onto the screen if this value is set to YES. This value will also be used to determine if the picker should animate when it is dismissed.
  */
@@ -58,6 +61,8 @@
  * @param sender On iPad, this should be a UIView for the popover view to animate from. On iPhone, this property is ignored.
  */
 - (void) showPicker:(id)sender;
+
+- (void) reloadData;
 
 /*!
  * This method will animate an action sheet onto the screen containing a button for each discovered ConnectableDevice. Due to the nature of action sheets, it is not possible to update the action sheet after it has appeared. It is recommended to use the showPicker: method if you want a picker that will update in real time.
