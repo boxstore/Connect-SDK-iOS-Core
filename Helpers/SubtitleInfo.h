@@ -61,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// A custom label that may be displayed by a device's media player.
 @property (nonatomic, readonly, nullable) NSString *label;
 
+@property (nonatomic) long subIdentifier;
 
 /// Creates a new instance with the given @c url.
 + (instancetype)infoWithURL:(NSURL *)url;

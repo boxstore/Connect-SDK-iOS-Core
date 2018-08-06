@@ -210,9 +210,9 @@
     } else
     {
         if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)
-            [_popover dismissPopoverAnimated:_shouldAnimatePicker];
+            [_popover dismissPopoverAnimated: (!_enableWifiSharing && _shouldAnimatePicker)];
         else
-            [_navigationController dismissViewControllerAnimated:_shouldAnimatePicker completion:nil];
+            [_navigationController dismissViewControllerAnimated:(!_enableWifiSharing && _shouldAnimatePicker) completion:nil];
     }
     
     [self cleanupViews];
@@ -428,8 +428,10 @@ static NSString *cellIdentifier = @"connectPickerCell";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:cellIdentifier];
     
     if (cell == nil)
+    {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
-    
+        cell.detailTextLabel.numberOfLines = 2;
+    }
     ConnectableDevice *device = nil;
     
     @synchronized (_generatedDeviceList)
@@ -442,7 +444,7 @@ static NSString *cellIdentifier = @"connectPickerCell";
         if (self.enableWifiSharing) {
             if (self.serverAddress && self.serverAddress.length > 0) {
                 [cell.textLabel setText: self.serverAddress];
-                [cell.detailTextLabel setText: @"Open the address in web browser by PC, Laptops, TV...  with the same wifi network"];
+                [cell.detailTextLabel setText: @"Open this link in web browser by PC, Laptops, TV...  with the same wifi network"];
             } else {
                 [cell.textLabel setText: @"Wifi Sharing"];
                 [cell.detailTextLabel setText: @"Tap to turn on Wifi Sharing"];
