@@ -31,11 +31,11 @@
     UINavigationController *_navigationController;
     UITableViewController *_tableViewController;
     
-    UIActionSheet *_actionSheet;
-    UIView *_actionSheetTargetView;
+    //    UIActionSheet *_actionSheet;
+    //    UIView *_actionSheetTargetView;
     
-    UIPopoverController *_popover;
-    NSDictionary *_popoverParams;
+    //    UIPopoverController *_popover;
+    //    NSDictionary *_popoverParams;
     
     dispatch_queue_t _sortQueue;
     
@@ -91,93 +91,93 @@
     [self showNavigation];
 }
 
-- (void) showPopover:(id)source
-{
-    _popover = [[UIPopoverController alloc] initWithContentViewController:_navigationController];
-    _popover.delegate = self;
-    
-    if ([source isKindOfClass:[UIBarButtonItem class]])
-    {
-        [_popover presentPopoverFromBarButtonItem:source permittedArrowDirections:UIPopoverArrowDirectionAny animated:self.shouldAnimatePicker];
-    } else if ([source isKindOfClass:[UIView class]])
-    {
-        UIView *sourceView = (UIView *)source;
-        CGRect sourceRect;
-        UIView *targetView;
-        UIPopoverArrowDirection permittedArrowDirections;
-        
-        if (sourceView.superview && ![sourceView.superview isKindOfClass:[UIWindow class]])
-        {
-            sourceRect = sourceView.frame;
-            targetView = sourceView.superview;
-            permittedArrowDirections = UIPopoverArrowDirectionAny;
-        } else
-        {
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRotation) name:UIDeviceOrientationDidChangeNotification object:nil];
-            
-            sourceRect = sourceView.frame;
-            targetView = sourceView;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wint-conversion"
-            permittedArrowDirections = NULL;
-#pragma clang diagnostic pop
-            
-            _popoverParams = @{
-                               @"sourceView" : sourceView,
-                               @"targetView" : targetView
-                               };
-        }
-        
-        [_popover presentPopoverFromRect:sourceRect inView:targetView permittedArrowDirections:permittedArrowDirections animated:self.shouldAnimatePicker];
-    } else
-    {
-        DLog(@"Sender should be a subclass of either UIBarButtonItem or UIView");
-        
-        [self cleanupViews];
-    }
-}
+//- (void) showPopover:(id)source
+//{
+//    _popover = [[UIPopoverController alloc] initWithContentViewController:_navigationController];
+//    _popover.delegate = self;
+//
+//    if ([source isKindOfClass:[UIBarButtonItem class]])
+//    {
+//        [_popover presentPopoverFromBarButtonItem:source permittedArrowDirections:UIPopoverArrowDirectionAny animated:self.shouldAnimatePicker];
+//    } else if ([source isKindOfClass:[UIView class]])
+//    {
+//        UIView *sourceView = (UIView *)source;
+//        CGRect sourceRect;
+//        UIView *targetView;
+//        UIPopoverArrowDirection permittedArrowDirections;
+//
+//        if (sourceView.superview && ![sourceView.superview isKindOfClass:[UIWindow class]])
+//        {
+//            sourceRect = sourceView.frame;
+//            targetView = sourceView.superview;
+//            permittedArrowDirections = UIPopoverArrowDirectionAny;
+//        } else
+//        {
+//            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRotation) name:UIDeviceOrientationDidChangeNotification object:nil];
+//
+//            sourceRect = sourceView.frame;
+//            targetView = sourceView;
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wint-conversion"
+//            permittedArrowDirections = NULL;
+//#pragma clang diagnostic pop
+//
+//            _popoverParams = @{
+//                               @"sourceView" : sourceView,
+//                               @"targetView" : targetView
+//                               };
+//        }
+//
+//        [_popover presentPopoverFromRect:sourceRect inView:targetView permittedArrowDirections:permittedArrowDirections animated:self.shouldAnimatePicker];
+//    } else
+//    {
+//        DLog(@"Sender should be a subclass of either UIBarButtonItem or UIView");
+//
+//        [self cleanupViews];
+//    }
+//}
 
-- (void) showActionSheet:(id)sender
-{
-    NSString *pickerTitle = [[NSBundle mainBundle] localizedStringForKey:@"Connect_SDK_Search_Title" value:@"Pick a device" table:@"ConnectSDK"];
-    NSString *pickerCancel = [[NSBundle mainBundle] localizedStringForKey:@"Connect_SDK_Search_Cancel" value:@"Cancel" table:@"ConnectSDK"];
-    
-    _actionSheet = [[UIActionSheet alloc] initWithTitle:pickerTitle
-                                               delegate:self
-                                      cancelButtonTitle:nil
-                                 destructiveButtonTitle:nil
-                                      otherButtonTitles:nil];
-    
-    @synchronized (_generatedDeviceList)
-    {
-        _actionSheetDeviceList = [_generatedDeviceList copy];
-    }
-    
-    [_actionSheetDeviceList enumerateObjectsUsingBlock:^(ConnectableDevice *device, NSUInteger idx, BOOL *stop)
-     {
-         [_actionSheet addButtonWithTitle:device.friendlyName];
-     }];
-    
-    _actionSheet.cancelButtonIndex = [_actionSheet addButtonWithTitle:pickerCancel];
-    
-    if ([sender isKindOfClass:[UIBarButtonItem class]])
-        [_actionSheet showFromBarButtonItem:sender animated:_shouldAnimatePicker];
-    else if ([sender isKindOfClass:[UITabBar class]])
-        [_actionSheet showFromTabBar:sender];
-    else if ([sender isKindOfClass:[UIToolbar class]])
-        [_actionSheet showFromToolbar:sender];
-    else if ([sender isKindOfClass:[UIControl class]])
-    {
-        UIControl *senderView = (UIControl *)sender;
-        [_actionSheet showFromRect:senderView.frame inView:senderView.superview animated:_shouldAnimatePicker];
-    } else
-    {
-        [_actionSheet showInView:sender];
-        
-        _actionSheetTargetView = sender;
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRotation) name:UIDeviceOrientationDidChangeNotification object:nil];
-    }
-}
+//- (void) showActionSheet:(id)sender
+//{
+//    NSString *pickerTitle = [[NSBundle mainBundle] localizedStringForKey:@"Connect_SDK_Search_Title" value:@"Pick a device" table:@"ConnectSDK"];
+//    NSString *pickerCancel = [[NSBundle mainBundle] localizedStringForKey:@"Connect_SDK_Search_Cancel" value:@"Cancel" table:@"ConnectSDK"];
+//
+//    _actionSheet = [[UIActionSheet alloc] initWithTitle:pickerTitle
+//                                               delegate:self
+//                                      cancelButtonTitle:nil
+//                                 destructiveButtonTitle:nil
+//                                      otherButtonTitles:nil];
+//
+//    @synchronized (_generatedDeviceList)
+//    {
+//        _actionSheetDeviceList = [_generatedDeviceList copy];
+//    }
+//
+//    [_actionSheetDeviceList enumerateObjectsUsingBlock:^(ConnectableDevice *device, NSUInteger idx, BOOL *stop)
+//     {
+//         [_actionSheet addButtonWithTitle:device.friendlyName];
+//     }];
+//
+//    _actionSheet.cancelButtonIndex = [_actionSheet addButtonWithTitle:pickerCancel];
+//
+//    if ([sender isKindOfClass:[UIBarButtonItem class]])
+//        [_actionSheet showFromBarButtonItem:sender animated:_shouldAnimatePicker];
+//    else if ([sender isKindOfClass:[UITabBar class]])
+//        [_actionSheet showFromTabBar:sender];
+//    else if ([sender isKindOfClass:[UIToolbar class]])
+//        [_actionSheet showFromToolbar:sender];
+//    else if ([sender isKindOfClass:[UIControl class]])
+//    {
+//        UIControl *senderView = (UIControl *)sender;
+//        [_actionSheet showFromRect:senderView.frame inView:senderView.superview animated:_shouldAnimatePicker];
+//    } else
+//    {
+//        [_actionSheet showInView:sender];
+//
+//        _actionSheetTargetView = sender;
+//        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleRotation) name:UIDeviceOrientationDidChangeNotification object:nil];
+//    }
+//}
 
 - (void) showNavigation
 {
@@ -204,16 +204,17 @@
 
 - (void) dismissPicker:(id)sender
 {
-    if (_actionSheet)
-    {
-        [_actionSheet dismissWithClickedButtonIndex:_actionSheet.cancelButtonIndex animated:YES];
-    } else
-    {
-        if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)
-            [_popover dismissPopoverAnimated: (!_enableWifiSharing && _shouldAnimatePicker)];
-        else
-            [_navigationController dismissViewControllerAnimated:(!_enableWifiSharing && _shouldAnimatePicker) completion:nil];
-    }
+    //    if (_actionSheet)
+    //    {
+    //        [_actionSheet dismissWithClickedButtonIndex:_actionSheet.cancelButtonIndex animated:YES];
+    //    } else
+    //    {
+    //        if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)
+    //            [_popover dismissPopoverAnimated: (!_enableWifiSharing && _shouldAnimatePicker)];
+    //        else
+    //            [_navigationController dismissViewControllerAnimated:(!_enableWifiSharing && _shouldAnimatePicker) completion:nil];
+    //    }
+    [_navigationController dismissViewControllerAnimated:(!_enableWifiSharing && _shouldAnimatePicker) completion:nil];
     
     [self cleanupViews];
     
@@ -235,19 +236,19 @@
         _tableViewController.tableView.dataSource = nil;
     }
     
-    if (_popover)
-        _popover.delegate = nil;
+    //    if (_popover)
+    //        _popover.delegate = nil;
     
-    if (_actionSheet)
-        _actionSheet.delegate = nil;
+    //    if (_actionSheet)
+    //        _actionSheet.delegate = nil;
     
-    _actionSheetTargetView = nil;
-    _actionSheet = nil;
+    //    _actionSheetTargetView = nil;
+    //    _actionSheet = nil;
     _actionSheetDeviceList = nil;
     _navigationController = nil;
     _tableViewController = nil;
-    _popoverParams = nil;
-    _popover = nil;
+    //    _popoverParams = nil;
+    //    _popover = nil;
     
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:nil];
 }
@@ -290,73 +291,73 @@
     if (!self.shouldAutoRotate)
         return;
     
-    if (_popover && _popoverParams)
-    {
-        UIView *sourceView = [_popoverParams objectForKey:@"sourceView"];
-        UIView *targetView = [_popoverParams objectForKey:@"targetView"];
-        
-        if (!sourceView || !targetView)
-            return;
-        
-        CGRect sourceRect = sourceView.bounds;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wint-conversion"
-        UIPopoverArrowDirection permittedArrowDirections = NULL;
-#pragma clang diagnostic pop
-        
-        [_popover presentPopoverFromRect:sourceRect inView:targetView permittedArrowDirections:permittedArrowDirections animated:self.shouldAnimatePicker];
-    } else if (_actionSheet && _actionSheetTargetView)
-    {
-        [_actionSheet showInView:_actionSheetTargetView];
-    }
+    //    if (_popover && _popoverParams)
+    //    {
+    //        UIView *sourceView = [_popoverParams objectForKey:@"sourceView"];
+    //        UIView *targetView = [_popoverParams objectForKey:@"targetView"];
+    //
+    //        if (!sourceView || !targetView)
+    //            return;
+    //
+    //        CGRect sourceRect = sourceView.bounds;
+    //#pragma clang diagnostic push
+    //#pragma clang diagnostic ignored "-Wint-conversion"
+    //        UIPopoverArrowDirection permittedArrowDirections = NULL;
+    //#pragma clang diagnostic pop
+    //
+    //        [_popover presentPopoverFromRect:sourceRect inView:targetView permittedArrowDirections:permittedArrowDirections animated:self.shouldAnimatePicker];
+    //    } else if (_actionSheet && _actionSheetTargetView)
+    //    {
+    //        [_actionSheet showInView:_actionSheetTargetView];
+    //    }
 }
 
 #pragma mark UIActionSheet methods
 
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex == actionSheet.cancelButtonIndex)
-        return;
-    
-    ConnectableDevice *device = [_actionSheetDeviceList objectAtIndex:buttonIndex];
-    BOOL deviceExists = YES;
-    
-    @synchronized (_generatedDeviceList)
-    {
-        deviceExists = [_generatedDeviceList containsObject:device];
-    }
-    
-    if (!deviceExists)
-    {
-        DLog(@"User selected a device that no longer exists");
-        return;
-    }
-    
-    if (self.delegate && [self.delegate respondsToSelector:@selector(devicePicker:didSelectDevice:)])
-    {
-        dispatch_async(dispatch_get_main_queue(), ^
-                       {
-                           [self.delegate devicePicker:self didSelectDevice:device];
-                       });
-    }
-}
+//- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+//{
+//    if (buttonIndex == actionSheet.cancelButtonIndex)
+//        return;
+//
+//    ConnectableDevice *device = [_actionSheetDeviceList objectAtIndex:buttonIndex];
+//    BOOL deviceExists = YES;
+//
+//    @synchronized (_generatedDeviceList)
+//    {
+//        deviceExists = [_generatedDeviceList containsObject:device];
+//    }
+//
+//    if (!deviceExists)
+//    {
+//        DLog(@"User selected a device that no longer exists");
+//        return;
+//    }
+//
+//    if (self.delegate && [self.delegate respondsToSelector:@selector(devicePicker:didSelectDevice:)])
+//    {
+//        dispatch_async(dispatch_get_main_queue(), ^
+//                       {
+//                           [self.delegate devicePicker:self didSelectDevice:device];
+//                       });
+//    }
+//}
 
 - (void) reloadData {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if (_tableViewController)
-            [_tableViewController.tableView reloadData];
+        if (self->_tableViewController)
+            [self->_tableViewController.tableView reloadData];
     });
 }
 
-- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
-{
-    [self cleanupViews];
-}
+//- (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
+//{
+//    [self cleanupViews];
+//}
 
-- (void)actionSheetCancel:(UIActionSheet *)actionSheet
-{
-    [self dismissPicker:nil];
-}
+//- (void)actionSheetCancel:(UIActionSheet *)actionSheet
+//{
+//    [self dismissPicker:nil];
+//}
 
 #pragma mark UITableViewDelegate methods
 
