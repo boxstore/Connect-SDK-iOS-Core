@@ -21,6 +21,7 @@
 #import "DevicePicker.h"
 #import "DiscoveryProvider.h"
 #import "DiscoveryManager.h"
+#import <MediaPlayer/MediaPlayer.h>
 
 @implementation DevicePicker
 {
@@ -391,6 +392,20 @@
             return;
     }
     
+    if ([device.connectedServiceNames containsString:@"AirPlay"]) {
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath: indexPath];
+        MPVolumeView *mp = (MPVolumeView *) cell.accessoryView;
+        if (mp) {
+            for ( int i = 0 ; i < mp.subviews.count; i++) {
+                UIView *subview = mp.subviews[i];
+                if ([subview isKindOfClass:[UIButton class]]) {
+                    [(UIButton *)subview sendActionsForControlEvents:UIControlEventTouchUpInside];
+                    return;
+                }
+            }
+        }
+    }
+    
     if (_delegate && [_delegate respondsToSelector:@selector(devicePicker:didSelectDevice:)])
     {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -431,6 +446,7 @@ static NSString *cellIdentifier = @"connectPickerCell";
     if (cell == nil)
     {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:cellIdentifier];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
         cell.detailTextLabel.numberOfLines = 2;
     }
     ConnectableDevice *device = nil;
@@ -447,8 +463,8 @@ static NSString *cellIdentifier = @"connectPickerCell";
                 [cell.textLabel setText: self.serverAddress];
                 [cell.detailTextLabel setText: @"Open this link in web browser by PC, Laptops, TV...  with the same wifi network"];
             } else {
-                [cell.textLabel setText: @"Wifi Sharing"];
-                [cell.detailTextLabel setText: @"Tap to turn on Wifi Sharing"];
+                [cell.textLabel setText: @"WiFi Sharing"];
+                [cell.detailTextLabel setText: @"Tap to turn on WiFi Sharing"];
             }
         } else {
             [cell.textLabel setText: @""];
@@ -473,6 +489,15 @@ static NSString *cellIdentifier = @"connectPickerCell";
             [cell setAccessoryType:UITableViewCellAccessoryCheckmark];
         else
             [cell setAccessoryType:UITableViewCellAccessoryNone];
+    }
+    if ([device.connectedServiceNames containsString: @"AirPlay"]) {
+        MPVolumeView *mp = [[MPVolumeView alloc] initWithFrame: CGRectMake(0, 0, 44, 44)];
+        mp.backgroundColor = [UIColor clearColor];
+        mp.showsVolumeSlider = NO;
+        mp.showsRouteButton = YES;
+        cell.accessoryView = mp;
+    } else {
+        cell.accessoryView = nil;
     }
     
     return cell;
