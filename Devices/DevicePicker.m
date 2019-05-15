@@ -202,6 +202,10 @@
     return rootViewController;
 }
 
+- (void) dismissPicker:(BOOL) animated completion: (void (^ __nullable)(void))completion {
+    [_navigationController dismissViewControllerAnimated: animated completion:completion];
+    [self cleanupViews];
+}
 
 - (void) dismissPicker:(id)sender
 {
@@ -379,7 +383,7 @@
             if (_delegate && [_delegate respondsToSelector:@selector(devicePickerDidSelectWifiSharing:)])
             {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [_delegate devicePickerDidSelectWifiSharing: self];
+                    [self->_delegate devicePickerDidSelectWifiSharing: self];
                 });
             }
         }
@@ -463,8 +467,8 @@ static NSString *cellIdentifier = @"connectPickerCell";
                 [cell.textLabel setText: self.serverAddress];
                 [cell.detailTextLabel setText: @"Open this link in web browser by PC, Laptops, TV...  with the same wifi network"];
             } else {
-                [cell.textLabel setText: @"WiFi Sharing"];
-                [cell.detailTextLabel setText: @"Tap to turn on WiFi Sharing"];
+                [cell.textLabel setText: @"Wi-Fi Sharing"];
+                [cell.detailTextLabel setText: @"Tap to turn on Wi-Fi Sharing"];
             }
         } else {
             [cell.textLabel setText: @""];

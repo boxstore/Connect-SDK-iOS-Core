@@ -62,6 +62,8 @@
  */
 - (void) showPicker:(id)sender;
 
+- (void) dismissPicker:(BOOL) animated completion: (void (^ __nullable)(void))completion;
+
 - (void) reloadData;
 
 /*!
